@@ -74,9 +74,9 @@ bool existe(char nome_arquivo[]){
 int padrao_tempo(char nascimento[]){
         char temp[8];
         //05/04/1999
-        for (size_t i = 0; i < 4; i++)temp[i] = nascimento[i+6];
-        for (size_t i = 0; i < 2; i++)temp[i+4] = nascimento[i+3];
-        for (size_t i = 0; i < 2; i++)temp[i+6] = nascimento[i];
+        for (size_t i = 0; i < 4; i++) temp[i] = nascimento[i+6];
+        for (size_t i = 0; i < 2; i++) temp[i+4] = nascimento[i+3];
+        for (size_t i = 0; i < 2; i++) temp[i+6] = nascimento[i];
         temp[8] = '\0';
 
         return atoi(temp);
@@ -102,7 +102,7 @@ bool check_nascimento(char nascimento[]){
                 return false;
         }
 
-        if (hoje-padrao_tempo(nascimento) < 180000){
+        if (hoje-padrao_tempo(nascimento) < 180000) {
                 printf("Menor de idade detectado!\n");
                 return false;
         }
@@ -130,11 +130,11 @@ int dia_atual(){
         //Sat Aug 26 03:58:08 2017
         strcat(buff, asctime(&tm));
 
-        for (index = 0; index < 4; index++) saida[index] = buff[index+20]; //ano no saida
+        for (index = 0; index < 4; index++) saida[index] = buff[index+20];  //ano no saida
         for (index = 0; index < 3; index++) mes_atual[index] = buff[index+4];
 
 
-        for (index = 0; index < 36; index += 3){
+        for (index = 0; index < 36; index += 3) {
                 for (i = 0; i < 2; i++)
                         if (mes_atual[i] != meses[index+i]) break;
 
@@ -151,31 +151,90 @@ int dia_atual(){
         }
 
         //dia na saida
-        saida[6] = buff[8];saida[7] = buff[9];saida[8] = '\0';
+        saida[6] = buff[8]; saida[7] = buff[9]; saida[8] = '\0';
 
         return atoi(saida);
+}
+
+void gravar_cliente(char nome[],char cpf[],char nascimento[]) {
+        char dir[] = "usr/";
+        strcat(dir, cpf);
+        FILE *fp;
+        fp = fopen (dir, "w");
+        if (fp == NULL) { printf("Erro ao acessar arquivo %s\n", cpf); return false; }
+
+        fprintf(fp,"%s;%s;%s;", nome,cpf,nascimento);
+        fclose(fp);
+
+        printf("Usuario cadastrado.\n");
+
+        return 0;
 }
 
 void cadastro_cliente() {
         printf("Cadastro\n");
 
-        char cpf[10], nome[50], nascimento[10];
+        char cpf[20], nome[50], nascimento[10];
         printf("Nome: ");
         scanf("%s", &nome);
 
+        //Ativar validacao de cpf na implementação
+        //Para realizar testes deixar comentado :D
+        //while (true) {
         printf("CPF: ");
         scanf("%s", &cpf);
-        if(!cpf_validacao(cpf))printf("CPF invalido\n");
+        //if(cpf_validacao(cpf)) break;
+
+        //printf("CPF invalido\n");
+        //}
+
+        if(existe(cpf)) {
+                printf("O usuario já possui cadastro\n");
+                return;
+        }
 
         printf("Nascimento dia/mes/ano: ");
         scanf("%s", &nascimento);
         check_nascimento(nascimento);
 
+        gravar_cliente(nome,cpf,nascimento);
 
 }
 
+void consultar_cliente(arquivo){
+        char dir[] = "usr/", ch,
+             cpf[20], nome[50], nascimento[10],
+             buff[100]={};
+
+        int corte=0,index=0, i=0;
+
+        strcat(dir, arquivo);
+        FILE *fp;
+        fp = fopen (dir, "r");
+        if (fp == NULL) { printf("Erro ao acessar arquivo %s\n", arquivo); return false; }
+
+        while( ( ch = fgetc(fp) ) != EOF ) buff[corte++] = ch;
+        buff[corte] = '\0';
+        corte = 0;
+
+        for (index=0; index < 100; index++) {if (buff[index] == ';'){nome[i] = '\0'; break; }  nome[i++] = buff[index]; }
+        for (i=0,index++; index < 100; index++) {if (buff[index] == ';'){cpf[i] = '\0'; break;} cpf[i++] = buff[index]; }
+        for (i=0,index++; index < 100; index++) {if (buff[index] == ';'){nascimento[i] = '\0'; break;} nascimento[i++] = buff[index]; }
+
+        //printf("Conteudo buff %s\n", buff);
+
+        printf("Nome: %s\n", nome);
+        printf("CPF: %s\n", cpf);
+        printf("Nascimento: %s\n", nascimento);
+
+        return 0;
+}
+
 int main(int argc, char const *argv[]) {
-        cadastro_cliente();
+        //Lembretes
+        //Descomentar validacao cpf no castro
+        //cadastro_cliente();
+        consultar_cliente("666");
 
 
 
