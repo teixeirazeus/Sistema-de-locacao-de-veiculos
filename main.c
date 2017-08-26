@@ -33,7 +33,7 @@ int cpf_validacao(char cpf[]){
         for(i=0; i<9; i++) somador+=icpf[i]*(10-i);
         result1=somador%11;
 
-        if( (result1==0) || (result1==1) ){
+        if( (result1==0) || (result1==1) ) {
                 digito1=0;
         }else{
                 digito1 = 11-result1;
@@ -45,13 +45,13 @@ int cpf_validacao(char cpf[]){
         valor=(somador/11)*11;
         result2=somador-valor;
 
-        if( (result2==0) || (result2==1) ){
+        if( (result2==0) || (result2==1) ) {
                 digito2=0;
         }else{
                 digito2=11-result2;
         }
 
-        if((digito1==icpf[9]) && (digito2==icpf[10])){
+        if((digito1==icpf[9]) && (digito2==icpf[10])) {
                 //printf("\nCPF VALIDADO.\n");
                 return true;
         }else{
@@ -70,73 +70,114 @@ bool existe(char nome_arquivo[]){
         return true; //existe
 }
 
-void cadastro_cliente() {
-        printf("Cadastro\n");
+
+int padrao_tempo(char nascimento[]){
+        char temp[8];
+        //05/04/1999
+        for (size_t i = 0; i < 4; i++)temp[i] = nascimento[i+6];
+        for (size_t i = 0; i < 2; i++)temp[i+4] = nascimento[i+3];
+        for (size_t i = 0; i < 2; i++)temp[i+6] = nascimento[i];
+        temp[8] = '\0';
+
+        return atoi(temp);
+
 }
 
 bool check_nascimento(char nascimento[]){
+        int hoje = dia_atual();
 
-        printf("Tamanho da data = %d \n",strlen(nascimento));
-
-        if (strlen(nascimento) != 10){  //Tamanho errado
+        if (strlen(nascimento) != 10) {  //Tamanho errado
                 printf("Erro: tamanho da data de nascimento está errada.\n");
                 printf("Siga o padrão 05/04/1999\n");
                 return false;
         }
 
         int barra = 0;
-        for (size_t index = 0; index < 10 ; index++)
-                if (nascimento[index] == "/") barra++;
-        if(barra != 2){
-                printf("Erro: sintaxe errada na data de nascimento\n");
+        for (size_t index = 0; index < 10; index++)
+                if (nascimento[index] == '/') barra++;
+
+        if(barra != 2) {
+                printf("Erro: sintaxe errada na data de nascimento.\n");
                 printf("Siga o padrão 05/04/1999\n");
+                return false;
+        }
+
+        if (hoje-padrao_tempo(nascimento) < 180000){
+                printf("Menor de idade detectado!\n");
+                return false;
         }
 
         return true;
 
 }
 
-void tempo(){
-        char buffer[32];
-        struct tm *ts;
-        char* c_time_string;
-        size_t last;
-        time_t timestamp = time(NULL);
+int dia_atual(){
+        //Retorna data atual
+        char saida[8] = {}, meses[] = "JanFebMarAprMayJunJulAugSepOctNovDec",
+             mes_atual[3] = {}, buff[30] = {};
 
-        c_time_string = ctime(&timestamp);
+        int index=0, i=0;
 
-        //ts   = localtime(&timestamp);
-        //last = strftime(buffer, 32, "%A", ts);
-        //buffer[last] = '\0';
+        struct tm tm = *localtime(&(time_t){time(NULL)});
+        //printf("%s", asctime(&tm));
 
-        printf("%s\n", c_time_string);
-        return 0;
+      #ifdef __STDC_LIB_EXT1__
+        char str[26];
+        asctime_s(str, sizeof str, &tm);
+        //printf("%s", str);
+      #endif
+
+        //Sat Aug 26 03:58:08 2017
+        strcat(buff, asctime(&tm));
+
+        for (index = 0; index < 4; index++) saida[index] = buff[index+20]; //ano no saida
+        for (index = 0; index < 3; index++) mes_atual[index] = buff[index+4];
+
+
+        for (index = 0; index < 36; index += 3){
+                for (i = 0; i < 2; i++)
+                        if (mes_atual[i] != meses[index+i]) break;
+
+                if (i == 2) break;
+        }
+
+        //mes na saida
+        if (i < 10) {
+                saida[4] = '0';
+                saida[5] = ((index/3)+1)+'0';
+        }else{
+                saida[4] = '1';
+                saida[5] = ((index/3)-9)+'0';
+        }
+
+        //dia na saida
+        saida[6] = buff[8];saida[7] = buff[9];saida[8] = '\0';
+
+        return atoi(saida);
 }
 
-int main(int argc, char const *argv[]) {
-        //cadastro_cliente();
-
-        tempo();
+void cadastro_cliente() {
+        printf("Cadastro\n");
 
         char cpf[10], nome[50], nascimento[10];
         printf("Nome: ");
         scanf("%s", &nome);
-        printf("\n Seu nome é %s \n", &nome );
 
         printf("CPF: ");
         scanf("%s", &cpf);
-        printf("\n Seu cpf é <%s> \n", &cpf );
-
-        printf("Length of string a = %d \n",strlen(cpf));
+        if(!cpf_validacao(cpf))printf("CPF invalido\n");
 
         printf("Nascimento dia/mes/ano: ");
         scanf("%s", &nascimento);
         check_nascimento(nascimento);
 
-        if(cpf_validacao(cpf))
-                printf("CPF valido\n");
+
+}
+
+int main(int argc, char const *argv[]) {
+        cadastro_cliente();
 
 
-        printf("teixeirazeus\n");
+
         return 0;
 }
