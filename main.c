@@ -25,9 +25,13 @@
 #include <stdbool.h>
 #include <time.h>
 
+#define cpf_size     20
+#define nome_size    50
+#define nascimento_size    10
+
 
 typedef struct cliente {
-    char cpf[20], nome[50], nascimento[10];
+    char cpf[cpf_size], nome[nome_size], nascimento[nascimento_size];
     struct cliente * next;
 } cliente_t;
 
@@ -183,7 +187,7 @@ void gravar_cliente(char nome[],char cpf[],char nascimento[]) {
 void cadastro_cliente() {
         printf("Cadastro\n");
 
-        char cpf[20], nome[50], nascimento[10];
+        char cpf[cpf_size], nome[nome_size], nascimento[nascimento_size];
         printf("Nome: ");
         scanf("%s", &nome);
 
@@ -212,7 +216,7 @@ void cadastro_cliente() {
 
 void consultar_cliente(char arquivo[]){
         char dir[] = "usr/", ch,
-             cpf[20], nome[50], nascimento[10],
+             cpf[cpf_size], nome[nome_size], nascimento[nascimento_size],
              buff[100]={};
 
         int corte=0,index=0, i=0;
@@ -265,7 +269,7 @@ cliente_t* init_cliente(){
 
 void menu(){
         int valor;
-        char cpf[20];
+        char cpf[cpf_size];
 
         printf("1.Cadastrar cliente\n");
         printf("2.Consultar cliente\n");
