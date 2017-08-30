@@ -25,6 +25,13 @@
 #include <stdbool.h>
 #include <time.h>
 
+
+typedef struct cliente {
+    char cpf[20], nome[50], nascimento[10];
+    struct cliente * next;
+} cliente_t;
+
+
 int cpf_validacao(char cpf[]){
         int icpf[12];
         int i,somador=0,digito1,result1,result2,digito2,valor;
@@ -68,6 +75,7 @@ bool existe(char nome_arquivo[]){
         if (fp == NULL) return false;  //não existe
 
         return true; //existe
+
 }
 
 
@@ -168,6 +176,7 @@ void gravar_cliente(char nome[],char cpf[],char nascimento[]) {
 
         printf("Usuario cadastrado.\n");
 
+
         return 0;
 }
 
@@ -201,7 +210,7 @@ void cadastro_cliente() {
 
 }
 
-void consultar_cliente(arquivo){
+void consultar_cliente(char arquivo[]){
         char dir[] = "usr/", ch,
              cpf[20], nome[50], nascimento[10],
              buff[100]={};
@@ -211,7 +220,7 @@ void consultar_cliente(arquivo){
         strcat(dir, arquivo);
         FILE *fp;
         fp = fopen (dir, "r");
-        if (fp == NULL) { printf("Erro ao acessar arquivo %s\n", arquivo); return false; }
+        if (fp == NULL) { printf("Erro ao acessar arquivo %s\n Confira suas entradas e tente novamente.\n", arquivo); return false; }
 
         while( ( ch = fgetc(fp) ) != EOF ) buff[corte++] = ch;
         buff[corte] = '\0';
@@ -230,12 +239,68 @@ void consultar_cliente(arquivo){
         return 0;
 }
 
+void banner(){
+        printf("██╗  ██╗███╗   ██╗ ██████╗ ██╗    ██╗██╗     ███████╗██████╗  ██████╗ ███████╗\n");
+        printf("██║ ██╔╝████╗  ██║██╔═══██╗██║    ██║██║     ██╔════╝██╔══██╗██╔════╝ ██╔════╝\n");
+        printf("█████╔╝ ██╔██╗ ██║██║   ██║██║ █╗ ██║██║     █████╗  ██║  ██║██║  ███╗█████╗\n");
+        printf("██╔═██╗ ██║╚██╗██║██║   ██║██║███╗██║██║     ██╔══╝  ██║  ██║██║   ██║██╔══╝\n");
+        printf("██║  ██╗██║ ╚████║╚██████╔╝╚███╔███╔╝███████╗███████╗██████╔╝╚██████╔╝███████╗\n");
+        printf("╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝  ╚══╝╚══╝ ╚══════╝╚══════╝╚═════╝  ╚═════╝ ╚══════╝\n");
+        printf("It's fun to drive up here in the Hollywood hills :D\n");
+}
+
+cliente_t* init_cliente(){
+    //char cpf[20], nome[50], nascimento[10];
+    cliente_t * head = NULL;
+    head = malloc(sizeof(cliente_t));
+
+    strcat(head->cpf, "666");
+    strcat(head->nome, "Tai lopez");
+    strcat(head->nascimento, "31/03/1964");
+    head->next = NULL;
+
+    return head;
+}
+
+
+void menu(){
+        int valor;
+        char cpf[20];
+
+        printf("1.Cadastrar cliente\n");
+        printf("2.Consultar cliente\n");
+        printf (": ");
+        scanf("%d", &valor);
+
+        switch ( valor ){
+
+        case 1 :
+                cadastro_cliente();
+        break;
+
+        case 2 :
+                printf("CPF:");
+                scanf("%s", &cpf);
+                consultar_cliente(cpf);
+        break;
+
+        default :
+                printf ("Valor invalido!\n");
+        }
+
+}
+
 int main(int argc, char const *argv[]) {
         //Lembretes
         //Descomentar validacao cpf no castro
         //cadastro_cliente();
-        consultar_cliente("666");
+        //consultar_cliente("666");
 
+        //banner();
+        //menu();
+
+        cliente_t * head = init_cliente();
+        printf("Nome: %s\n", head->cpf);
 
 
         return 0;
