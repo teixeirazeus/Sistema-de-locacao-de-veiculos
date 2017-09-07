@@ -114,7 +114,9 @@ bool check_nascimento(char nascimento[]){
                 return false;
         }
 
-        if (hoje-padrao_tempo(nascimento) < 180000) {
+			printf("hoje %i", hoje);
+			printf("nascimento %i", padrao_tempo(nascimento));
+        if (hoje - padrao_tempo(nascimento) < 180000) {
                 printf("Menor de idade detectado!\n");
                 return false;
         }
@@ -141,6 +143,7 @@ int dia_atual(){
 
         //Sat Aug 26 03:58:08 2017
         strcat(buff, asctime(&tm));
+        printf("Buff %s \n", buff);
 
         for (index = 0; index < 4; index++) saida[index] = buff[index+20];  //ano no saida
         for (index = 0; index < 3; index++) mes_atual[index] = buff[index+4];
@@ -163,7 +166,14 @@ int dia_atual(){
         }
 
         //dia na saida
-        saida[6] = buff[8]; saida[7] = buff[9]; saida[8] = '\0';
+        if (buff[8] == '0'){
+			saida[6] = buff[8];   
+		  }else{
+			  saida[6] = '0';
+		  }
+        
+        
+        saida[7] = buff[9]; saida[8] = '\0';
 
         return atoi(saida);
 }
@@ -300,11 +310,11 @@ int main(int argc, char const *argv[]) {
         //cadastro_cliente();
         //consultar_cliente("666");
 
-        //banner();
-        //menu();
+        banner();
+        menu();
 
-        cliente_t * head = init_cliente();
-        printf("Nome: %s\n", head->cpf);
+        //cliente_t * head = init_cliente();
+       // printf("Nome: %s\n", head->cpf);
 
 
         return 0;
