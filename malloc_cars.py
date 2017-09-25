@@ -23,6 +23,10 @@
 #
 import os
 import copy
+import time
+
+def clear():
+    os.system("clear")
 
 def listar(dir):
     p = os.popen("ls "+dir+"/", "r")
@@ -95,8 +99,10 @@ def cadastro_cliente():
         dados.append(input(imp))
 
     f = open("usr/" + cpf, 'w')
+    i = 0
     for dado in dados:
-        f.write(dado + "\n")
+        f.write(info[i]+dado + "\n")
+        i += 1
     f.close()
 
     print("Cliente cadastrado com sucesso.")
@@ -113,14 +119,15 @@ def cadastro_carro():
         dados.append(input(imp))
 
     f = open("car/" + cpf, 'w')
+    i = 0
     for dado in dados:
-        f.write(dado + "\n")
+        f.write(info[i]+dado + "\n")
+        i += 1
     f.close()
 
     print("Carro cadastrado com sucesso.")
 
-
-def main(args):
+def fresh():
     usr_db,car_db,loc = carregar_dados()
     carros_stor = []
     for carro in car_db.keys():
@@ -130,9 +137,101 @@ def main(args):
         for locacao in loc:
             if locacao[1] == carro:
                 carros_stor.remove(carro)
-    print(carros_stor)
 
-    cadastro_cliente()
+
+def alugar():
+    clear()
+    id = input("Entre com o cpf do cliente:")
+    if id not in listar("usr"):
+        print("Usuario não cadastrado!")
+        resp = input("Deseja realizar seu cadastro?[s/n]:")
+        if resp == "n":
+            return
+        cadastro_cliente()
+    print("Escolha uma categoria de carro.")
+    print("1.economica")
+    print("2.")
+
+
+def banner():
+    os.system("cat banner")
+
+def main(args):
+    #configurações globais
+    #Preço das categorias
+    global p1, p2, p3
+    p1 = 5  #economica
+    p2 = 10 #
+    p3 = 20
+
+    #inicialização
+    global usr_db,car_db,loc,carros_stor
+    #usr_db,car_db,loc = carregar_dados()
+    fresh()
+    #/inicialização
+
+    while(True):
+        clear()
+        banner()
+        print("|-----------|")
+        print("|1.Cliente  |")
+        print("|2.Carros   |")
+        print("|3.Locação  |")
+        print("|-----------|")
+        resp = input(":")
+        if resp == "1":
+            print("|<Cliente>--|")
+            print("|1.Atualizar|")
+            print("|2.Cadastro |")
+            print("|3.Remover  |")
+            print("|-----------|")
+            resp = input(":")
+            if resp == "1":
+                id = input("Insira o cpf do usuario:")
+                os.system("nano usr/"+id)
+            elif resp == "2":
+                cadastro_cliente()
+            elif resp == "3":
+                id = input("Insira o cpf do usuario:")
+                os.system("cat usr/"+id)
+                rest = input("Você deseja remover o usuario acima?[s/n]")
+                    if resp == "s":
+                        os.system("rm usr/"+id)
+                        print("Usuario deletado!")
+                        time.sleep(2)
+        elif resp == "2":
+            print("|<Carros>--|")
+            print("|1.Atualizar|")
+            print("|2.Cadastro |")
+            print("|3.Remover  |")
+            print("|-----------|")
+            resp = input(":")
+            if resp == "1":
+                id = input("Insira a placa do carro:")
+                os.system("nano car/"+id)
+            elif resp == "2":
+                cadastro_carro()
+            elif resp == "3":
+                id = input("Insira a placa do carro:)
+                os.system("cat carro/"+id)
+                rest = input("Você deseja remover o carro acima?[s/n]")
+                    if resp == "s":
+                        os.system("rm car/"+id)
+                        print("Carro deletado!")
+                        time.sleep(2)
+        elif resp == "3":
+            locacao()
+
+
+
+
+
+
+
+
+
+
+
 
     return 0
 
