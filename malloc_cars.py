@@ -24,6 +24,8 @@
 import os
 import copy
 import time
+import subprocess
+from datetime import date
 
 def clear():
     os.system("clear")
@@ -128,6 +130,7 @@ def cadastro_carro():
     print("Carro cadastrado com sucesso.")
 
 def fresh():
+    global usr_db,car_db,loc,carros_stor
     usr_db,car_db,loc = carregar_dados()
     carros_stor = []
     for carro in car_db.keys():
@@ -139,7 +142,8 @@ def fresh():
                 carros_stor.remove(carro)
 
 
-def alugar():
+
+def locacao():
     clear()
     id = input("Entre com o cpf do cliente:")
     if id not in listar("usr"):
@@ -150,8 +154,45 @@ def alugar():
         cadastro_cliente()
     print("Escolha uma categoria de carro.")
     print("1.economica")
-    print("2.")
+    print("2.intermediaria")
+    print("3.luxo")
+    resp = input(":")
 
+
+    for cat in carros_stor:
+        if cat[0] == resp:
+            print("--------------")
+            for dados in cat:
+                print(dados)
+            print("--------------")
+
+    placa = input("Insira o numero da placa do carro:")
+    dia = input("Insira o dia da entrega dd/mm/yyyy:")
+
+    clear()
+    print("CPF:",id)
+    print("Carro:",placa)
+    print("Dia:", dia)
+    resp = input("Deseja alugar o carro? [s/n]:")
+    if resp == "s":
+        temp = id+' '+placa+' '+' '+dia
+        os.system("echo "+temp+" >> loc")
+        print("Carro locado!")
+        fresh()
+    else:
+        print("Operação cancelada!")
+
+    time.sleep(1)
+
+def date_dif(data, mod = 0):
+    #mod = 1 para calculo de menor de idade
+    hoje = date.today()
+    data = data.split("/")
+    data = date(int(data[2]),int(data[1]),int(data[0]))
+    dif = abs(data-hoje)
+    if mod == 1:
+        return dif.years
+    return dif.days
 
 def banner():
     os.system("cat banner")
@@ -161,8 +202,8 @@ def main(args):
     #Preço das categorias
     global p1, p2, p3
     p1 = 5  #economica
-    p2 = 10 #
-    p3 = 20
+    p2 = 10 #intermediaria
+    p3 = 20 #luxo
 
     #inicialização
     global usr_db,car_db,loc,carros_stor
@@ -177,6 +218,7 @@ def main(args):
         print("|1.Cliente  |")
         print("|2.Carros   |")
         print("|3.Locação  |")
+        print("|4.Devolução|")
         print("|-----------|")
         resp = input(":")
         if resp == "1":
@@ -195,10 +237,10 @@ def main(args):
                 id = input("Insira o cpf do usuario:")
                 os.system("cat usr/"+id)
                 rest = input("Você deseja remover o usuario acima?[s/n]")
-                    if resp == "s":
-                        os.system("rm usr/"+id)
-                        print("Usuario deletado!")
-                        time.sleep(2)
+                if resp == "s":
+                    os.system("rm usr/"+id)
+                    print("Usuario deletado!")
+                    time.sleep(2)
         elif resp == "2":
             print("|<Carros>--|")
             print("|1.Atualizar|")
@@ -212,26 +254,38 @@ def main(args):
             elif resp == "2":
                 cadastro_carro()
             elif resp == "3":
-                id = input("Insira a placa do carro:)
+                id = input("Insira a placa do carro:")
                 os.system("cat carro/"+id)
                 rest = input("Você deseja remover o carro acima?[s/n]")
-                    if resp == "s":
-                        os.system("rm car/"+id)
-                        print("Carro deletado!")
-                        time.sleep(2)
+                if resp == "s":
+                    os.system("rm car/"+id)
+                    print("Carro deletado!")
+                    time.sleep(2)
         elif resp == "3":
             locacao()
+            #Remove
+            #grep -vwE "(cat|666)" loc
+        elif resp == "4":
+            cpf = input("Insira o cpf do cliente:")
+            output = subprocess.check_output("cat loc | grep "+cpf, shell=True)
+            output = output.decode('ascii')
+            output = output.rstrip()
+            output = output.split(" ")
+            print("CPF:",output[0])
+            print("Placa:", output[1])
+            print("Dia:", output[2])
 
-
-
-
-
-
-
-
-
-
-
+            #pegar categoria_preco
+            #Incluir multa
+            print("--------------------------")
+            print("Total:",preco*date_dif(output[2]))
+            print("--------------------------")
+            x = input("Pagar? [s/n]")
+            if x == "s":
+                os.system('grep -vwE "(cat|'+cpf+')" loc >> loc')
+                fresh()
+                print("Computado!")
+                time.sleep(2)
 
     return 0
 
