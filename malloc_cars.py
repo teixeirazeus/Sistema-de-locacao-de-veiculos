@@ -27,121 +27,11 @@ import time
 import subprocess
 from datetime import date
 
+import load
+import cadastro
+
 def clear():
     os.system("clear")
-
-def listar(dir):
-    p = os.popen("ls "+dir+"/", "r")
-    diretorio = []
-    while 1:
-        line = p.readline()
-        if not line:
-            break
-        diretorio.append(line.rstrip())
-    #for item in diretorio:
-    #    print(item)
-    return diretorio
-
-def carregar_cliente(cpf):
-    f = open("usr/" + cpf)
-    dados = []
-    while 1:
-        line = f.readline()
-        if not line:
-            break
-        dados.append(line.rstrip())
-    f.close()
-    return dados
-
-def carregar_carro(placa):
-    f = open("car/" + placa)
-    dados = []
-    while 1:
-        line = f.readline()
-        if not line:
-            break
-        dados.append(line.rstrip())
-    f.close()
-    return dados
-
-def carregar_dados():
-    usuarios = listar("usr")
-    usr_db = {}
-    for cliente in usuarios:
-        dados = carregar_cliente(cliente)
-        usr_db[cliente] = dados
-
-    usuarios = listar("car")
-    car_db = {}
-    for placa in usuarios:
-        dados = carregar_carro(placa)
-        car_db[placa] = dados
-
-    return usr_db,car_db,locs()
-
-def locs():
-    f = open("loc")
-    dados = []
-    while 1:
-        line = f.readline()
-        if not line:
-            break
-        dados.append((line.rstrip()).split())
-    f.close()
-    return dados
-
-def cadastro_cliente():
-    cpf = input("CPF:")
-    if cpf in listar("usr"):
-        print("Usuario já cadastrado!")
-        return
-    dados = []
-    info = ['Nome:', 'Data de nascimento (dd/mm/aaaa):', 'RG:', 'CNH:', 'Validade:']
-    for imp in info:
-        dados.append(input(imp))
-
-    f = open("usr/" + cpf, 'w')
-    i = 0
-    for dado in dados:
-        f.write(info[i]+dado + "\n")
-        i += 1
-    f.close()
-
-    print("Cliente cadastrado com sucesso.")
-
-
-def cadastro_carro():
-    cpf = input("Placa:")
-    if cpf in listar("car"):
-        print("Carro já cadastrado!")
-        return
-    dados = []
-    info = ['Categoria:', 'Renavan:', 'Marca:', 'Modelo:', 'Combustivel:','Cor:']
-    for imp in info:
-        dados.append(input(imp))
-
-    f = open("car/" + cpf, 'w')
-    i = 0
-    for dado in dados:
-        f.write(info[i]+dado + "\n")
-        i += 1
-    f.close()
-
-    print("Carro cadastrado com sucesso.")
-
-def fresh():
-    global usr_db,car_db,loc,carros_stor
-    usr_db,car_db,loc = carregar_dados()
-    carros_stor = []
-    for carro in car_db.keys():
-        carros_stor.append(carro) #carros na garagem
-
-    for carro in carros_stor:   #tira carros alugados da garagem
-        for locacao in loc:
-            if locacao[1] == carro:
-                carros_stor.remove(carro)
-
-
 
 def locacao():
     clear()
@@ -151,13 +41,12 @@ def locacao():
         resp = input("Deseja realizar seu cadastro?[s/n]:")
         if resp == "n":
             return
-        cadastro_cliente()
+        cadastro.cadastro_cliente()
     print("Escolha uma categoria de carro.")
     print("1.economica")
     print("2.intermediaria")
     print("3.luxo")
     resp = input(":")
-
 
     for cat in carros_stor:
         if cat[0] == resp:
@@ -172,27 +61,32 @@ def locacao():
     clear()
     print("CPF:",id)
     print("Carro:",placa)
-    print("Dia:", dia)
+    print("Dia de locacao:", dia)
+    print("Dias:",date_dif(dia))
     resp = input("Deseja alugar o carro? [s/n]:")
     if resp == "s":
         temp = id+' '+placa+' '+' '+dia
         os.system("echo "+temp+" >> loc")
         print("Carro locado!")
-        fresh()
+        load.fresh()
     else:
         print("Operação cancelada!")
 
     time.sleep(1)
 
-def date_dif(data, mod = 0):
-    #mod = 1 para calculo de menor de idade
-    hoje = date.today()
-    data = data.split("/")
-    data = date(int(data[2]),int(data[1]),int(data[0]))
-    dif = abs(data-hoje)
+def date_dif(data, data2 = date.today()):
+    data = str2date(data)
+    if type(data2) == type(''):
+        data2 = str2date(data2)
+    dif = abs(data-data2)
     if mod == 1:
         return dif.years
     return dif.days
+
+def str2date(data):
+    data = data.split("/")
+    data = date(int(data[2]),int(data[1]),int(data[0]))
+    return date
 
 def banner():
     os.system("cat banner")
@@ -201,14 +95,14 @@ def main(args):
     #configurações globais
     #Preço das categorias
     global p1, p2, p3
-    p1 = 5  #economica
-    p2 = 10 #intermediaria
-    p3 = 20 #luxo
+    p1 = 89.9  #economica
+    p2 = 174.9 #intermediaria
+    p3 = 289.9 #luxo
 
     #inicialização
     global usr_db,car_db,loc,carros_stor
     #usr_db,car_db,loc = carregar_dados()
-    fresh()
+    load.fresh()
     #/inicialização
 
     while(True):
@@ -267,23 +161,26 @@ def main(args):
             #grep -vwE "(cat|666)" loc
         elif resp == "4":
             cpf = input("Insira o cpf do cliente:")
-            output = subprocess.check_output("cat loc | grep "+cpf, shell=True)
+            output = subprocess.check_output("cat loc | grep "+cpf, shell=True) #pega os dados da linha em loc
             output = output.decode('ascii')
             output = output.rstrip()
             output = output.split(" ")
             print("CPF:",output[0])
             print("Placa:", output[1])
-            print("Dia:", output[2])
+            print("Data de devolução:", output[2])
 
             #pegar categoria_preco
             #Incluir multa
             print("--------------------------")
             print("Total:",preco*date_dif(output[2]))
+            #soma de multa
+
             print("--------------------------")
             x = input("Pagar? [s/n]")
             if x == "s":
-                os.system('grep -vwE "(cat|'+cpf+')" loc >> loc')
-                fresh()
+                os.system('cat loc | grep '+cpf+' >> log') #Salva o log
+                os.system('grep -vwE "(cat|'+cpf+')" loc >> loc')   #Tira a linha com cpf em loc
+                load.fresh()
                 print("Computado!")
                 time.sleep(2)
 
