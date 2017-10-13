@@ -72,9 +72,6 @@ def mod(target, nome):
             f.close()
             return
 
-
-
-
 def lista_categoria(resp):
     for carro in car_db:
         if carro in carros_stor and car_db[carro][1] == "Categoria:"+resp:
