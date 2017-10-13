@@ -35,19 +35,20 @@ def cadastro(dadoi, dir, info):
 
     f = open(dir+"/" + nome, 'w')
     i = 0
+    f.write(dadoi+nome+ "\n")
     for dado in dados:
         f.write(info[i]+dado + "\n")
         i += 1
     f.close()
-    print("Cadastrado com sucesso.")
+    
 
-def cadastro_cliente():
+def cliente():
     dadoi = "CPF:"
     dir = "usr"
     info = ['Nome:', 'Data de nascimento (dd/mm/aaaa):', 'RG:', 'CNH:', 'Validade:']
     cadastro(dadoi, dir, info)
 
-def cadastro_carro():
+def carro():
     dadoi = "Placa:"
     dir = "car"
     info = ['Categoria:', 'Renavan:', 'Marca:', 'Modelo:', 'Combustivel:','Cor:']

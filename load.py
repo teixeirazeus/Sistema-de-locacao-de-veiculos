@@ -69,13 +69,17 @@ def carregar_dados():
     return usr_db,car_db,locs()
 
 def fresh():
-    global usr_db,car_db,loc,carros_stor
+    #global usr_db,car_db,loc,carros_stor
     usr_db,car_db,loc = carregar_dados()
     carros_stor = []
-    for carro in car_db.keys():
-        carros_stor.append(carro) 
 
+    for carro in car_db.keys():
+        carros_stor.append(carro)
+
+    #carros_stor = []
     for carro in carros_stor:
         for locacao in loc:
-            if locacao[1] == carro:
+            placa = locacao.split()[1]
+            if placa == carro:
                 carros_stor.remove(carro)
+    return usr_db,car_db,loc,carros_stor
