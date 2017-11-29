@@ -47,6 +47,20 @@ def load(dir, nome):
 def carregar_cliente(cpf):
     return load("usr/",cpf)
 
+def carregar_categorias():
+    f = open("categorias", 'r')
+    categorias = {}
+    while 1:
+        line = f.readline()
+        if not line:
+            break
+        entrada = line.rstrip()
+        entrada = entrada.split(" ")
+        print(">>",entrada)
+        categorias[entrada[0]] = float(entrada[1])
+    f.close()
+    return categorias
+
 def carregar_carro(placa):
     return load("car/", placa)
 
@@ -82,4 +96,4 @@ def fresh():
             placa = locacao.split()[1]
             if placa == carro:
                 carros_stor.remove(carro)
-    return usr_db,car_db,loc,carros_stor
+    return usr_db,car_db,loc,carros_stor,carregar_categorias()

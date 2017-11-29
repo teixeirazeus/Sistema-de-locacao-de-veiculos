@@ -81,14 +81,16 @@ def lista_categoria(resp):
             print("===========================")
 
 def calc_preco(categoria, dia_locacao, dia_devolucao):
+    preco = categorias[categoria]
+
     dias = date_dif(dia_devolucao,dia_locacao)
-    custo = dias*preco[categoria-1]
+    custo = dias* preco
 
     data = dia_devolucao.split("/")
     data = date(int(data[2]),int(data[1]),int(data[0]))
 
     if data < date.today():
-        multa = date_dif(dia_devolucao)*preco[categoria-1]*2 #multa com o dobro
+        multa = date_dif(dia_devolucao)* preco*2 #multa com o dobro
     else:
         multa = 0
     return custo, multa
@@ -110,26 +112,45 @@ def locacao():
         return
 
     print("Escolha uma categoria de carro.")
-    print("1.economica")
-    print("2.intermediaria")
-    print("3.luxo")
+    #print("1.economica")
+    #print("2.intermediaria")
+    #print("3.luxo")
+    for chave in categorias.keys():
+        print(chave,":",categorias[chave])
     resp = input(":")
 
+    if resp not in categorias.keys():
+        print("Erro: categoria não existe!")
+        return
+
+
+    #Lista os carros por categoria
     lista_categoria(resp)
 
+    preco = categorias[resp]
 
     placa = input("Insira o numero da placa do carro:")
     dia = input("Insira o dia da entrega dd/mm/yyyy:")
+
+    resp = input("Deseja adcionar seguro por 10% do valor da diaria? [s/n]:")
+    if resp == "s":
+        seguro = "1"
+        preco *= 1.1
+    else:
+        seguro = "0"
+
 
     clear()
     print("CPF:",cpf)
     print("Carro:",placa)
     print("Dia de devolucao:", dia)
     print("Dias:",date_dif(dia))
-    print("Preço: R$ ",preco[int(resp)-1]*int(date_dif(dia)))
+    print("Preço: R$ ",preco*int(date_dif(dia)))
+    if seguro == "1":
+        print("Seguro já incluso no preço!")
     resp = input("Deseja alugar o carro? [s/n]:")
     if resp == "s":
-        temp = cpf+' '+placa+' '+str(date.today())+ ' ' +dia
+        temp = cpf+' '+placa+' '+str(date.today())+ ' ' +dia+ ' '+seguro
         os.system("echo "+temp+" >> loc")
         print("Carro locado!")
     else:
@@ -159,20 +180,21 @@ def banner():
 def main(args):
     #configurações globais
     #Preço das categorias
-    global preco
+    #global preco
     #p1 = 89.9  #economica
     #p2 = 174.9 #intermediaria
     #p3 = 289.9 #luxo
-    preco = [89.9,174.9,289.9]
+    #preco = [89.9,174.9,289.9]
+
 
     #inicialização
-    global usr_db,car_db,loc,carros_stor
+    global usr_db,car_db,loc,carros_stor, categorias
     #usr_db,car_db,loc = carregar_dados()
     #usr_db,car_db,loc,carros_stor = load.fresh()
     #/inicialização
 
     while(True):
-        usr_db,car_db,loc,carros_stor = load.fresh()
+        usr_db,car_db,loc,carros_stor,categorias = load.fresh()
         clear()
         banner()
         print("|-----------|")
@@ -181,6 +203,7 @@ def main(args):
         print("|3.Locação  |")
         print("|4.Devolução|")
         print("|5.Busca    |")
+        print("|6.Categoria|")
         print("|-----------|")
         resp = input(":")
         if resp == "1":
@@ -246,16 +269,51 @@ def main(args):
             print("Placa:", output[1])
             print("Data de locação:", output[2])
             print("Data de devolução:", output[3])
-            categoria = int((car_db[output[1]][1]).split(":")[1])
+            categoria = (car_db[output[1]][1]).split(":")[1]
 
             #pegar categoria_preco
             custo,multa = calc_preco(categoria, output[2], output[3])
 
+            abaste = 0
+            hige = 0
+            conserto = 0
+            seguro = 0
+
+            print("O carro precisa ser abastecido?[s/n]")
+            resp = input(":")
+            if resp == "s":
+                abaste = 500
+
+            print("O carro precisa de higenização?[s/n]")
+            resp = input(":")
+            if resp == "s":
+                hige = 100
+
+            print("O carro precisa de conserto?[s/n]")
+            resp = input(":")
+            if resp == "s":
+                resp = input("Insira o valor do conserto:")
+                conserto = float(resp)*1.15 #15 porcento de taxa administrativa
+
             #Incluir multa
             print("--------------------------")
             print("Preço: %.2f" % (custo))
-            print("Multa: %.2f" % (multa))
-            print("Total: %.2f" % (custo+multa))
+
+            if output[4] == "1":
+                seguro = custo*0.1
+                print("Seguro: %.2f" % (seguro))
+            if multa != 0:
+                print("Multa: %.2f" % (multa))
+            if abaste != 0:
+                print("Abastecimento: %.2f" % (abaste))
+            if hige != 0:
+                print("Higenização: %.2f" % (hige))
+            if conserto != 0:
+                print("Conserto: %.2f" % (conserto))
+
+            total = custo+multa+abaste+hige+conserto+seguro
+
+            print("Total: %.2f" % (total))
             #soma de multa
 
             print("--------------------------")
@@ -305,7 +363,45 @@ def main(args):
                         clear()
                         lista_categoria(resp)
                         x = input("pressione enter para voltar")
-
+        elif resp == "6":
+            print("|--------------------|")
+            print("|1.Listar            |")
+            print("|2.Nova categoria    |")
+            print("|3.Alterar categoria |")
+            print("|4.Remover categoria |")
+            print("|--------------------|")
+            resp = input(":")
+            if resp == "1":
+                print("|Categoria --- Preço|")
+                os.system("cat categorias")
+                print("|--------------------|")
+                resp = input("Pressione enter para retornar...")
+            elif resp == "2":
+                nome = input("Insira o nome da nova categoria:")
+                valor = input("Valor da diaria:")
+                os.system("echo "+nome+" "+valor+" >> categorias")
+                print("Categoria cadastrada!")
+                time.sleep(2)
+            elif resp == "3":
+                print("|Categoria --- Preço|")
+                os.system("cat categorias")
+                print("|--------------------|")
+                nome = input("Insira o nome da categoria:")
+                os.system('grep -vwE "(cat|'+nome+')" categorias > temp')
+                os.system('cp temp categorias')
+                valor = input("Valor da diaria:")
+                os.system("echo "+nome+" "+valor+" >> categorias")
+                print("Categoria alterada!")
+                time.sleep(2)
+            elif resp == "4":
+                print("|Categoria --- Preço|")
+                os.system("cat categorias")
+                print("|--------------------|")
+                nome = input("Insira o nome da categoria:")
+                os.system('grep -vwE "(cat|'+nome+')" categorias > temp')
+                os.system('cp temp categorias')
+                print("Categoria deletada!")
+                time.sleep(2)
 
     return 0
 
